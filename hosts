@@ -1,0 +1,2 @@
+[staging]
+staging.example.com ansible_ssh_user=www-data

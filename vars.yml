@@ -1,0 +1,15 @@
+
+remote_bk_dir: /var/www/ansible-remote-backup/ # DO NOT CHANGE
+local_bk_dir: /vagrant/ansible-local-backup/ # DO NOT CHANGE
+databases:
+   - example_com # Remote Database name
+db_host: 10.10.10.10 # Input your remote site database host name
+db_user: site_db_user # Input your remote site database user name
+db_pass: site_db_pass # Input your remote site database user password
+project_repo: git@github.com:Organization/Composer-Repository.git # your project Repository
+project_repo_dest: /vagrant/Composer-Repo
+your_name: harshad
+your_email: yourname@example.com # your email address
+fileOwner: www-data
+fileGroup: www-data
+local_domain: example.localtest.me # your local site name

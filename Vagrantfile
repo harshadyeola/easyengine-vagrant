@@ -39,6 +39,7 @@ Vagrant.configure("2") do |config|
   #
   # Enable agent forwarding on vagrant ssh commands. This allows you to use ssh keys
   # on your host machine inside the guest. See the manual for `ssh-add`.
+  squeeze.ssh.private_key_path = ['~/.vagrant.d/insecure_private_key', '~/.ssh/id_rsa']
   config.ssh.forward_agent = true
 
   # Default Ubuntu Box
@@ -57,7 +58,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider :vmware_fusion do |v, override|
     override.vm.box = "netsensia/ubuntu-trusty64"
   end
-  
+
   # VMWare Workstation can use the same package as Fusion
   config.vm.provider :vmware_workstation do |v, override|
     override.vm.box = "netsensia/ubuntu-trusty64"

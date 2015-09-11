@@ -1,0 +1,104 @@
+---
+- name: Website clone
+  hosts: staging
+  sudo: False
+  vars_files:
+    - vars.yml
+
+  tasks:
+
+    - name: Install composer
+      local_action: shell curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin creates=/usr/local/bin/composer
+      tags: composer
+
+    - name: Rename composer.phar to composer
+      local_action: shell sudo mv /usr/local/bin/composer.phar /usr/local/bin/composer creates=/usr/local/bin/composer
+      tags: composer
+
+    - name: clone composer repository
+      local_action: git repo={{ project_repo }} version=staging dest={{ project_repo_dest }} accept_hostkey=yes force=yes recursive=no
+      tags:
+        - folders
+
+    - name: create site with domain
+      local_action: shell sudo ee site create {{ local_domain }} --wp
+      tags:
+        - folders
+
+    - name: Store webroot
+      local_action: shell sudo su -c "rm -rf /var/www/{{ local_domain }} && mv {{ project_repo_dest }} /var/www/{{ local_domain }}"
+      tags:
+        - folders
+
+    - name: run composer
+      local_action: shell cd /var/www/{{ local_domain }}/htdocs/ && composer install
+      tags:
+        - folders
+
+    - name: Update wp-config DB_NAME
+      local_action: shell sed -i s/$(grep DB_NAME /var/www/{{ local_domain }}/wp-config.php | cut -d "'" -f 4)/$(sudo ee site info {{ local_domain }} | grep 'DB_NAME' | awk '{ print $2 }')/g  /var/www/{{ local_domain }}/wp-config.php
+      tags:
+        - folders
+    - name: Update wp-config DB_USER
+      local_action: shell sed -i s/$(grep DB_USER /var/www/{{ local_domain }}/wp-config.php | cut -d "'" -f 4)/$(sudo ee site info {{ local_domain }} | grep 'DB_USER' | awk '{ print $2 }')/g  /var/www/{{ local_domain }}/wp-config.php
+      tags:
+        - folders
+
+    - name:  Update wp-config DB_PASS
+      local_action: shell sed -i s/$(grep DB_PASS /var/www/{{ local_domain }}/wp-config.php | cut -d "'" -f 4)/$(sudo ee site info {{ local_domain }} | grep 'DB_PASS' | awk '{ print $2 }')/g  /var/www/{{ local_domain }}/wp-config.php
+      tags:
+         - folders
+
+    - name:  Update wp-config DB_HOST
+      local_action: shell sed -i "s/^define.*.DB_HOST.*/define('DB_HOST', 'localhost');/" /var/www/{{ local_domain }}/wp-config.php
+      tags:
+         - folders
+
+
+    - name: Create Backups folder
+      file: path={{ remote_bk_dir }} state=directory
+      tags:
+        - folders
+        - databases
+
+    - name: Dump databases
+      mysql_db: login_user={{ db_user }} login_host={{ db_host }} login_password={{ db_pass }} name={{ item }} state=dump target={{ remote_bk_dir }}{{ item }}Db.sql
+      with_items: databases
+      tags:
+        - databases
+
+    - name: Fetch databases
+      fetch: src={{ remote_bk_dir }}{{ item }}Db.sql dest={{ local_bk_dir }} owner={{ fileOwner }} group={{ fileGroup }}
+      with_items: databases
+      tags:
+        - databases
+
+    - name: Import database into local
+      local_action: shell local_db_name=$(sudo ee site info {{ local_domain }} | grep 'DB_NAME' | awk '{ print $2 }') && pv {{ local_bk_dir }}{{ inventory_hostname }}{{ remote_bk_dir }}{{ item }}Db.sql | sudo mysql $local_db_name
+      with_items: databases
+      tags:
+        - databases
+
+    - name: change webroot permissions
+      local_action: shell sudo chown -R www-data:www-data /var/www
+      with_items: databases
+      tags:
+        - folders
+
+    - name: Delete temp backup folder from server
+      file: path={{ remote_bk_dir }} state=absent
+      tags:
+        - folders
+        - databases
+
+    - name: Send email notification
+      local_action: mail msg='Site clone Activity Report'
+                    subject="Ansible-report"
+                    body="Site has been cloned locally"
+                    from="server@email.com "
+                    to="Your Name <your@email.com>"
+      ignore_errors: true
+      tags:
+        - folders
+        - databases
+        - notification
