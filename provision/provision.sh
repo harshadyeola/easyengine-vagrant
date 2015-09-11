@@ -14,7 +14,7 @@ wget -qO ee rt.cx/ee && sudo bash ee  || exit 1
 
 myecho
 
-sudo apt-get -y install ansible  || exit 1
+sudo apt-get -y install ansible pv wget curl || exit 1
 
 myecho
 # Install latest Ruby

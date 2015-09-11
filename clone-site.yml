@@ -7,6 +7,10 @@
 
   tasks:
 
+    - name: Install php
+      local_action: shell sudo ee stack install --php
+      tags: composer
+
     - name: Install composer
       local_action: shell curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin creates=/usr/local/bin/composer
       tags: composer
@@ -16,7 +20,7 @@
       tags: composer
 
     - name: clone composer repository
-      local_action: git repo={{ project_repo }} version=staging dest={{ project_repo_dest }} accept_hostkey=yes force=yes recursive=no
+      local_action: git repo={{ project_repo }} version=staging dest={{ project_repo_dest }} force=yes
       tags:
         - folders
 
