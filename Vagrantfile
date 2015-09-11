@@ -39,7 +39,7 @@ Vagrant.configure("2") do |config|
   #
   # Enable agent forwarding on vagrant ssh commands. This allows you to use ssh keys
   # on your host machine inside the guest. See the manual for `ssh-add`.
-  squeeze.ssh.private_key_path = ['~/.vagrant.d/insecure_private_key', '~/.ssh/id_rsa']
+  config.ssh.private_key_path = ['~/.vagrant.d/insecure_private_key', '~/.ssh/id_rsa']
   config.ssh.forward_agent = true
 
   # Default Ubuntu Box
