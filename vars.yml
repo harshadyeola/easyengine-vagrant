@@ -13,3 +13,7 @@ your_email: yourname@example.com # your email address
 fileOwner: www-data
 fileGroup: www-data
 local_domain: example.localtest.me # your local site name
+
+repository_basedir: ..
+git_username: Some User
+git_usermail: someuser@somedomain.com

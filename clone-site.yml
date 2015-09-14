@@ -7,6 +7,12 @@
 
   tasks:
 
+    # Install the default templates
+    - name: Git | Push global config file
+      template:
+          local_action: src=$repository_basedir/git/templates/gitconfig.j2
+                        dest=~/.gitconfig
+
     - name: Install php
       local_action: shell sudo ee stack install --php
       tags: composer
@@ -20,7 +26,7 @@
       tags: composer
 
     - name: clone composer repository
-      local_action: git repo={{ project_repo }} version=staging dest={{ project_repo_dest }} force=yes
+      local_action: git repo={{ project_repo }} version=staging dest={{ project_repo_dest }} force=yes accept_hostkey=yes
       tags:
         - folders
 
